@@ -2,17 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { TaskItem as TaskType } from '../utils/handle-api';
+import { useTaskStore } from '../store/useTasksStore';
 
-// TODO (Zustand): Mantenha apenas a prop 'task'. Remova 'updateMode' e 'deleteTask'
 interface TaskItemProps {
   task: TaskType;
-  updateMode: () => void;
-  deleteTask: () => void;
+  onEdit: (task: TaskType) => void;
 }
 
-// TODO (Zustand): Importe o useTaskStore e pegue as actions de atualizar e deletar diretamente da store
-const TaskItem: React.FC<TaskItemProps> = ({ task, updateMode, deleteTask }) => {
-  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date(new Date().setHours(0, 0, 0, 0));
+const TaskItem: React.FC<TaskItemProps> = ({ task, onEdit }) => {
+  const removeTask = useTaskStore((state) => state.removeTask);
+
+  const isOverdue =
+    task.dueDate && new Date(task.dueDate) < new Date(new Date().setHours(0, 0, 0, 0));
 
   return (
     <View style={styles.task}>
@@ -21,16 +22,28 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, updateMode, deleteTask }) => 
           {task.text}
         </Text>
         {task.dueDate && (
-          <Text style={[styles.dateText, isOverdue ? styles.dateOverdue : styles.dateOnTime]}>
+          <Text
+            style={[
+              styles.dateText,
+              isOverdue ? styles.dateOverdue : styles.dateOnTime,
+            ]}
+          >
             Até: {new Date(task.dueDate).toLocaleDateString()}
           </Text>
         )}
       </View>
       <View style={styles.icons}>
-        <TouchableOpacity onPress={updateMode} accessibilityRole="button">
+        <TouchableOpacity
+          onPress={() => onEdit(task)}
+          accessibilityRole="button"
+        >
           <Feather name="edit" size={20} color="#fff" style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={deleteTask} accessibilityRole="button">
+
+        <TouchableOpacity
+          onPress={() => removeTask(task._id)}
+          accessibilityRole="button"
+        >
           <AntDesign name="delete" size={20} color="#fff" style={styles.icon} />
         </TouchableOpacity>
       </View>
