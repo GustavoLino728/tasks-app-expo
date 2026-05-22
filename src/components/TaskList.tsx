@@ -2,16 +2,15 @@ import React, { useMemo } from 'react';
 import { SectionList, StyleSheet, View, Text } from 'react-native';
 import TaskItem from './TaskItem';
 import { TaskItem as TaskType } from '../utils/handle-api';
+import { useTaskStore } from '../store/useTasksStore';
 
-// TODO (Zustand): Remova as props tasks, onUpdate e onDelete daqui, elas não serão mais necessárias
 interface TaskListProps {
-  tasks: TaskType[];
   onUpdate: (task: TaskType) => void;
-  onDelete: (id: string) => void;
 }
 
-// TODO (Zustand): Importe o useTaskStore e pegue as tasks diretamente da store
-const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdate, onDelete }) => {
+const TaskList: React.FC<TaskListProps> = ({ onUpdate }) => {
+  const tasks = useTaskStore((state) => state.tasks);
+
   const sections = useMemo(() => {
     const completedTasks = tasks.filter((task) => task.completed);
     const pendingTasks = tasks.filter((task) => !task.completed);
@@ -32,16 +31,13 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdate, onDelete }) => {
           <Text style={styles.sectionHeader}>{title}</Text>
         )}
         renderItem={({ item }) => (
-          
-          <TaskItem
-            task={item}
-            updateMode={() => onUpdate(item)}
-            deleteTask={() => onDelete(item._id)}
-          />
+          <TaskItem task={item} onEdit={onUpdate} />
         )}
-        renderSectionFooter={({ section }) => 
+        renderSectionFooter={({ section }) =>
           section.data.length === 0 ? (
-            <Text style={styles.emptySectionText}>Nenhuma tarefa nesta categoria.</Text>
+            <Text style={styles.emptySectionText}>
+              Nenhuma tarefa nesta categoria.
+            </Text>
           ) : null
         }
       />
@@ -71,7 +67,7 @@ const styles = StyleSheet.create({
     color: '#666',
     fontStyle: 'italic',
     textAlign: 'center',
-  }
+  },
 });
 
 export default TaskList;
