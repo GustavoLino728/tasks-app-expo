@@ -1,3 +1,4 @@
+// src/components/TaskList.tsx
 import React, { useMemo } from 'react';
 import { SectionList, StyleSheet, View, Text } from 'react-native';
 import TaskItem from './TaskItem';
@@ -10,16 +11,23 @@ interface TaskListProps {
 
 const TaskList: React.FC<TaskListProps> = ({ onUpdate }) => {
   const tasks = useTaskStore((state) => state.tasks);
+  const filter = useTaskStore((state) => state.filter);
+
+  const filteredTasks = useMemo(() => {
+    if (filter === 'completed') return tasks.filter((t) => t.completed);
+    if (filter === 'pending') return tasks.filter((t) => !t.completed);
+    return tasks;
+  }, [tasks, filter]);
 
   const sections = useMemo(() => {
-    const completedTasks = tasks.filter((task) => task.completed);
-    const pendingTasks = tasks.filter((task) => !task.completed);
+    const completedTasks = filteredTasks.filter((task) => task.completed);
+    const pendingTasks = filteredTasks.filter((task) => !task.completed);
 
     return [
       { title: '✅ Concluídas', data: completedTasks },
       { title: '📋 Pendentes', data: pendingTasks },
     ];
-  }, [tasks]);
+  }, [filteredTasks]);
 
   return (
     <View style={styles.listContainer}>
